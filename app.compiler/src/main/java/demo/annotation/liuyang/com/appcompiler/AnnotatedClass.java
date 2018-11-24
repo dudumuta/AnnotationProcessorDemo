@@ -7,11 +7,18 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
+import javax.annotation.processing.Filer;
+import javax.annotation.processing.Messager;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
 
 /**
  * 定义一个被注解类对象AnnotedClass,用于保存哪些被注解的对象
@@ -27,11 +34,15 @@ class AnnotatedClass {
     private TypeElement mTypeElement;
     private ArrayList<BindViewField> mFields;
     private Elements mElements;
+    private Messager mMessager;
+    private Filer mFiler;
 
-    AnnotatedClass(TypeElement typeElement, Elements elements) {
+    AnnotatedClass(TypeElement typeElement, Elements elements, Messager messager, Filer filer) {
         mTypeElement = typeElement;
         mElements = elements;
         mFields = new ArrayList<>();
+        mMessager = messager;
+        mFiler = filer;
     }
 
     void addField(BindViewField field) {
@@ -69,6 +80,18 @@ class AnnotatedClass {
                 .build();
 
         String packageName = mElements.getPackageOf(mTypeElement).getQualifiedName().toString();
+
+        mMessager.printMessage(Diagnostic.Kind.WARNING, "dudumuta's packageName:" + packageName);
+        mMessager.printMessage(Diagnostic.Kind.WARNING, "dudumuta's claseName:" + injectClass.name);
+
+        try {
+            List<Element> originatingElements = injectClass.originatingElements;
+            JavaFileObject filerSourceFile = mFiler.createSourceFile(packageName,
+                    originatingElements.toArray(new Element[originatingElements.size()]));
+            mMessager.printMessage(Diagnostic.Kind.WARNING, "dudumuta's fileName:" + filerSourceFile.getName());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return JavaFile.builder(packageName, injectClass).build();
     }

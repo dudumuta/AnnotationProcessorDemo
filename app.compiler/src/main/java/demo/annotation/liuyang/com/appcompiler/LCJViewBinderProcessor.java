@@ -87,7 +87,7 @@ public class LCJViewBinderProcessor extends AbstractProcessor {
         String fullName = typeElement.getQualifiedName().toString();
         AnnotatedClass annotatedClass = mAnnotatedClassMap.get(fullName);
         if (annotatedClass == null) {
-            annotatedClass = new AnnotatedClass(typeElement, mElementUtils);
+            annotatedClass = new AnnotatedClass(typeElement, mElementUtils, mMessager, mFiler);
             mAnnotatedClassMap.put(fullName, annotatedClass);
         }
         return annotatedClass;
